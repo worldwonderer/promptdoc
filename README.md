@@ -1,6 +1,6 @@
 # Prompt Doc
 
-该项目用于管理多版本、多场景、多适用模型的 Prompt 集合。基于Python和Flask框架开发，提供了一组 RESTful API，用于对 Prompt 模板进行创建、检索、更新和删除等操作。
+该项目用于管理多版本、多场景、多适用模型的 Prompt 模板集合。基于Python和Flask框架开发，提供了一组 RESTful API，用于对 Prompt 模板进行创建、检索、更新和删除等操作。
 
 ## 技术栈
 
