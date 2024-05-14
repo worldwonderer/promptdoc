@@ -1,6 +1,6 @@
 # Prompt Doc
 
-该项目用于管理多版本、多场景、多适用模型的 Prompt 模板集合。基于Python和Flask框架开发，提供了一组 RESTful API，用于对 Prompt 模板进行创建、检索、更新和删除等操作。
+该项目用于管理多版本、多场景、多适用模型的 Prompt 模板集合。基于 Python 和 Flask 框架开发，提供了一组 RESTful API，用于对 Prompt 模板进行创建、检索、更新和删除等操作。
 
 ## 技术栈
 
@@ -10,7 +10,7 @@
 
 ## 如何运行
 
-1. 安装Python3和MongoDB
+1. 安装 Python3 和 MongoDB
 
 2. 克隆项目代码
     ```bash
@@ -22,12 +22,12 @@
    pip install -r requirements.txt
    ```
 
-4. 配置MONGODB_HOST环境变量
+4. 配置 MONGODB_HOST 环境变量
    ```bash
    export MONGODB_HOST=<mongodb://>
    ```
 
-5. 运行Flask应用
+5. 运行 Flask 应用
    ```bash
    python debug.py
    ```
@@ -38,12 +38,14 @@
 - `variables`：Prompt 中的变量列表，是一个字符串列表。
 - `example`：Prompt 的示例，是一个字典字段。
 - `version`：Prompt 的版本号，是一个必填字段。
-- `applicable_llm`：适用的 LLM（Language Model），是一个必填字段。
+- `applicable_llm`：适用的 LLM（model name），是一个必填字段。
 - `created_at`：Prompt 的创建时间，默认为当前时间。
 - `updated_at`：Prompt 的更新时间，默认为当前时间。
 - `tags`：Prompt 的标签列表。
 
 ## API接口
+
+完整请求示例可参考`test_api.py`
 
 ### 创建Prompt
 
