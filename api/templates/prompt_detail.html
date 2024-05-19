@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Prompt Detail{% endblock %}
+
+{% block content %}
+    <h1>Prompt Detail</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ prompt.prompt_id }}</h5>
+            <p class="card-text"><strong>Content:</strong> {{ prompt.content }}</p>
+            <p class="card-text"><strong>Variables:</strong> {{ prompt.variables|join(', ') }}</p>
+            <p class="card-text"><strong>Example:</strong> {{ prompt.example }}</p>
+            <p class="card-text"><strong>Version:</strong> {{ prompt.version }}</p>
+            <p class="card-text"><strong>Applicable LLM:</strong> {{ prompt.applicable_llm }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ prompt.created_at }}</p>
+            <p class="card-text"><strong>Updated At:</strong> {{ prompt.updated_at }}</p>
+            <p class="card-text"><strong>Tags:</strong> {{ prompt.tags|join(', ') }}</p>
+            <a href="/prompts" class="btn btn-secondary">Back to List</a>
+            <a href="/prompt/{{ prompt.prompt_id }}/edit" class="btn btn-primary">Edit</a>
+            <form action="/prompt/{{ prompt.prompt_id }}/delete" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirmDelete();">Delete</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

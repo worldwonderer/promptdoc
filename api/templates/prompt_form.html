@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Create' if not prompt else 'Edit' }} Prompt{% endblock %}
+
+{% block content %}
+<h1>{{ 'Create' if not prompt else 'Edit' }} Prompt</h1>
+
+{% if errors %}
+<div class="alert alert-danger">
+    {% for field, error_messages in errors.items() %}
+    <strong>{{ field }}:</strong>
+    <ul>
+        {% for error in error_messages %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+<form method="POST" action="{{ '/admin/prompt/create' if not prompt else '/admin/prompt/' + prompt.prompt_id + '/edit' }}">
+    <div class="mb-3">
+        <label for="content" class="form-label">Content</label>
+        <textarea class="form-control" id="content" name="content" rows="3" required>{{ prompt.content if prompt else '' }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="variables" class="form-label">Variables</label>
+        <div class="input-group">
+            <input type="text" class="form-control" id="variable-input" placeholder="Enter a variable">
+            <button type="button" class="btn btn-outline-secondary" id="add-variable">Add</button>
+        </div>
+        <div id="variables-container" class="mt-2">
+            {% if prompt %}
+                {% for variable in prompt.variables %}
+                    <span class="badge bg-secondary me-2">{{ variable }} <button type="button" class="btn-close btn-close-white" aria-label="Remove"></button></span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <input type="hidden" id="variables" name="variables" value="{{ prompt.variables|join(',') if prompt else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="example" class="form-label">Example</label>
+        <textarea class="form-control" id="example" name="example" rows="3" required>{{ prompt.example if prompt else '' }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="applicable_llm" class="form-label">Applicable LLM</label>
+        <input type="text" class="form-control" id="applicable_llm" name="applicable_llm" value="{{ prompt.applicable_llm if prompt else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="tags" class="form-label">Tags</label>
+        <div class="input-group">
+            <input type="text" class="form-control" id="tag-input" placeholder="Enter a tag">
+            <button type="button" class="btn btn-outline-secondary" id="add-tag">Add</button>
+        </div>
+        <div id="tags-container" class="mt-2">
+            {% if prompt %}
+                {% for tag in prompt.tags %}
+                    <span class="badge bg-secondary me-2">{{ tag }} <button type="button" class="btn-close btn-close-white" aria-label="Remove"></button></span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <input type="hidden" id="tags" name="tags" value="{{ prompt.tags|join(',') if prompt else '' }}">
+    </div>
+    <button type="submit" class="btn btn-primary">{{ 'Create' if not prompt else 'Update' }}</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const variableInput = document.getElementById('variable-input');
+        const addVariableButton = document.getElementById('add-variable');
+        const variablesContainer = document.getElementById('variables-container');
+        const variablesField = document.getElementById('variables');
+
+        const tagInput = document.getElementById('tag-input');
+        const addTagButton = document.getElementById('add-tag');
+        const tagsContainer = document.getElementById('tags-container');
+        const tagsField = document.getElementById('tags');
+
+        function addVariable() {
+            const variable = variableInput.value.trim();
+            if (variable) {
+                const badge = document.createElement('span');
+                badge.classList.add('badge', 'bg-primary', 'me-2');
+                badge.innerHTML = `${variable} <button type="button" class="btn-close" aria-label="Remove"></button>`;
+                variablesContainer.appendChild(badge);
+                variableInput.value = '';
+                updateVariablesField();
+            }
+        }
+
+        function addTag() {
+            const tag = tagInput.value.trim();
+            if (tag) {
+                const badge = document.createElement('span');
+                badge.classList.add('badge', 'bg-primary', 'me-2');
+                badge.innerHTML = `${tag} <button type="button" class="btn-close" aria-label="Remove"></button>`;
+                tagsContainer.appendChild(badge);
+                tagInput.value = '';
+                updateTagsField();
+            }
+        }
+
+        function updateVariablesField() {
+            const variables = Array.from(variablesContainer.getElementsByTagName('span')).map(span => span.firstChild.textContent.trim());
+            variablesField.value = variables.join(',');
+        }
+
+        function updateTagsField() {
+            const tags = Array.from(tagsContainer.getElementsByTagName('span')).map(span => span.firstChild.textContent.trim());
+            tagsField.value = tags.join(',');
+        }
+
+        addVariableButton.addEventListener('click', addVariable);
+        variableInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addVariable();
+            }
+        });
+
+        addTagButton.addEventListener('click', addTag);
+        tagInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addTag();
+            }
+        });
+
+        variablesContainer.addEventListener('click', function (event) {
+            if (event.target.classList.contains('btn-close')) {
+                event.target.closest('span').remove();
+                updateVariablesField();
+            }
+        });
+
+        tagsContainer.addEventListener('click', function (event) {
+            if (event.target.classList.contains('btn-close')) {
+                event.target.closest('span').remove();
+                updateTagsField();
+            }
+        });
+    });
+</script>
+{% endblock %}
