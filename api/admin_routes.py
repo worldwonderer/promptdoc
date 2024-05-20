@@ -1,12 +1,41 @@
+import os
 import ast
 import uuid
+from functools import wraps
+
+import pyotp
 from marshmallow.exceptions import ValidationError
-from flask import render_template, Blueprint, request, redirect
+from flask import render_template, Blueprint, request, redirect, session, url_for
 
 from .models import Prompt, PromptSchema
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+ADMIN_SECRET = os.environ.get('ADMIN_SECRET')
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('admin.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@admin_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        auth_code = request.form['auth_code']
+        totp = pyotp.TOTP(ADMIN_SECRET)
+        if totp.verify(auth_code):
+            session['logged_in'] = True
+            session.permanent = True  # 设置session为永久性的
+            return redirect(url_for('admin.prompt_list'))
+        else:
+            return 'Invalid auth code', 403
+    else:
+        return render_template('login.html')
 
 
 def handle_form_data(form):
@@ -22,6 +51,7 @@ def handle_form_data(form):
 
 
 @admin_bp.route('/prompts')
+@login_required
 def prompt_list():
     tag = request.args.get('tag')
     search = request.args.get('search')
@@ -50,6 +80,7 @@ def prompt_list():
 
 
 @admin_bp.route('/prompt/create', methods=['GET', 'POST'])
+@login_required
 def create_prompt():
     if request.method == 'POST':
         try:
@@ -70,6 +101,7 @@ def create_prompt():
 
 
 @admin_bp.route('/prompt/<prompt_id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_prompt(prompt_id):
     prompt = Prompt.objects.get(prompt_id=prompt_id)
     if request.method == 'POST':
@@ -84,6 +116,7 @@ def edit_prompt(prompt_id):
 
 
 @admin_bp.route('/prompt/<prompt_id>/delete', methods=['POST'])
+@login_required
 def delete_prompt(prompt_id):
     prompt = Prompt.objects.get(prompt_id=prompt_id)
     prompt.delete()
@@ -91,6 +124,7 @@ def delete_prompt(prompt_id):
 
 
 @admin_bp.route('/prompt/<prompt_id>')
+@login_required
 def prompt_detail(prompt_id):
     prompt = Prompt.objects.get(prompt_id=prompt_id)
     return render_template('prompt_detail.html', prompt=prompt)

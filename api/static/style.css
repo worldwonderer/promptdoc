@@ -185,3 +185,34 @@ footer p {
   background-color: var(--white-color);
   border-color: var(--secondary-color);
 }
+
+.login-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  background-color: var(--white-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.form-control {
+  border-radius: var(--border-radius);
+  border: 1px solid var(--secondary-color);
+  transition: border-color var(--transition-duration) ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}

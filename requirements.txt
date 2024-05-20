@@ -13,5 +13,9 @@ mongoengine==0.28.2
 packaging==24.0
 pluggy==1.5.0
 pymongo==4.7.2
+pyotp==2.9.0
+pypng==0.20220715.0
 pytest==8.2.0
+qrcode==7.4.2
+typing_extensions==4.11.0
 Werkzeug==3.0.3

@@ -1,5 +1,7 @@
+import os
 import uuid
 import logging
+from functools import wraps
 
 from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
@@ -10,12 +12,25 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 
 logger = logging.getLogger(__name__)
 
+AUTH_TOKEN = os.getenv('AUTH_TOKEN', 'your_token_here')
+
 
 def error_response(message, status_code):
     return jsonify({'error': message}), status_code
 
 
+def token_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token != f"Bearer {AUTH_TOKEN}":
+            return error_response('Unauthorized', 401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @bp.route('/prompt/<prompt_id>', methods=['GET'])
+@token_required
 def get_prompt_detail(prompt_id):
     """
     Get detailed information of a specific prompt.
@@ -37,6 +52,7 @@ def get_prompt_detail(prompt_id):
 
 
 @bp.route('/prompt/<prompt_id>', methods=['PUT'])
+@token_required
 def update_prompt(prompt_id):
     """
     Update an existing prompt.
@@ -64,6 +80,7 @@ def update_prompt(prompt_id):
 
 
 @bp.route('/prompt/<prompt_id>', methods=['DELETE'])
+@token_required
 def delete_prompt(prompt_id):
     """
     Delete a prompt.
@@ -85,6 +102,7 @@ def delete_prompt(prompt_id):
 
 
 @bp.route('/prompt', methods=['POST'])
+@token_required
 def create_prompt():
     """
     Create a new prompt.
@@ -108,53 +126,43 @@ def create_prompt():
 
 
 @bp.route('/prompts', methods=['GET'])
+@token_required
 def get_prompt_list():
     """
-    Get a list of prompts with pagination, filtering, and sorting.
+    Get a list of prompts with optional filtering and pagination.
 
-    Query Parameters:
-    - applicable_llm: Filter prompts by applicable LLM.
-    - tag: Filter prompts by tag.
-    - keywords: Search prompts by keywords in content.
-    - cursor: The cursor for pagination (default: None).
-    - limit: The maximum number of prompts to return per page (default: 10, max: 100).
-    - sort_by: The field to sort the prompts by (default: '-created_at').
-
-    :return: JSON response containing the list of prompts.
+    :return: JSON response containing the list of prompts and pagination information.
     """
     try:
-        applicable_llm = request.args.get('applicable_llm')
         tag = request.args.get('tag')
-        keywords = request.args.get('keywords')
-        cursor = request.args.get('cursor')
-        limit = max(1, min(100, int(request.args.get('limit', 10))))  # Clamp limit between 1 and 100
-        sort_by = request.args.get('sort_by', '-created_at')
+        search = request.args.get('search')
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 10))
+        sort_by = '-created_at'
 
-        query = Prompt.objects
-        if applicable_llm:
-            query = query.filter(applicable_llm=applicable_llm)
+        query = Prompt.objects.order_by(sort_by)
+
         if tag:
             query = query.filter(tags__in=[tag])
-        if keywords:
-            query = query.search_text(keywords)
-        query = query.order_by(sort_by)
-        if cursor:
-            query = query.filter(id__gt=cursor)
 
-        prompts = query.limit(limit + 1)
-        has_more = prompts.count() > limit
-        prompts = prompts[:limit]
-        next_cursor = str(prompts[-1].id) if has_more else None
+        if search:
+            query = query.filter(content__icontains=search)
+
+        total_count = query.count()
+        prompts = query.skip((page - 1) * per_page).limit(per_page)
 
         prompt_schema = PromptSchema(many=True)
-        prompt_list = prompt_schema.dump(prompts)
+        prompt_data = prompt_schema.dump(prompts)
 
-        response_data = {
-            'prompts': prompt_list,
-            'has_more': has_more,
-            'next_cursor': next_cursor
-        }
-        return jsonify(response_data), 200
+        return jsonify({
+            'data': prompt_data,
+            'pagination': {
+                'total_count': total_count,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': (total_count + per_page - 1) // per_page
+            }
+        }), 200
     except Exception as e:
-        logger.exception(f"Error retrieving prompts: {str(e)}")
-        return error_response('Failed to retrieve prompts', 500)
+        logger.error(f"Error retrieving prompt list: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve prompt list'}), 500

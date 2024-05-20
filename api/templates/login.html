@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Login</h1>
+    <form method="post">
+        <div class="mb-3">
+            <label for="auth_code" class="form-label">Google Authenticator Code</label>
+            <input type="text" class="form-control" id="auth_code" name="auth_code" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+</div>
+{% endblock %}

@@ -42,7 +42,7 @@ def test_get_prompt_list(client):
     assert response.status_code == 200
 
     # Check that the response body is a JSON array
-    assert isinstance(response.json['prompts'], list)
+    assert isinstance(response.json['data'], list)
 
     # Optionally, you can check other aspects of the response, such as the number of prompts returned
     # assert len(response.json) == expected_number_of_prompts
