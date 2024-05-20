@@ -16,13 +16,13 @@ def test_create_prompt(client):
         'content': 'Test prompt content',
         'variables': ['variable1', 'variable2'],
         'example': {'variable1': 'example1', 'variable2': 'example2'},
-        'version': '1.0',
+        'version': '1',
         'applicable_llm': 'LLM1',
         'tags': ['tag1', 'tag2']
     }
 
     # Make a POST request to create a new prompt
-    response = client.post('/prompt', json=data)
+    response = client.post('/api/prompt', json=data)
 
     # Check that the response status code is 201 (Created)
     assert response.status_code == 201
@@ -36,13 +36,13 @@ def test_create_prompt(client):
 
 def test_get_prompt_list(client):
     # Make a GET request to retrieve the list of prompts
-    response = client.get('/prompts')
+    response = client.get('/api/prompts')
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200
 
     # Check that the response body is a JSON array
-    assert isinstance(response.json, list)
+    assert isinstance(response.json['prompts'], list)
 
     # Optionally, you can check other aspects of the response, such as the number of prompts returned
     # assert len(response.json) == expected_number_of_prompts
@@ -56,7 +56,7 @@ def created_prompt():
         'content': 'Test prompt content',
         'variables': ['variable1', 'variable2'],
         'example': {'variable1': 'example1', 'variable2': 'example2'},
-        'version': '1.0',
+        'version': '1',
         'applicable_llm': 'LLM1',
         'tags': ['tag1', 'tag2']
     }
@@ -73,13 +73,13 @@ def test_update_prompt(client, created_prompt):
         'content': 'Updated prompt content',
         'variables': ['variable1', 'variable2', 'variable3'],
         'example': {'variable1': 'updated_example1', 'variable2': 'updated_example2', 'variable3': 'example3'},
-        'version': '2.0',
+        'version': '2',
         'applicable_llm': 'LLM2',
         'tags': ['tag1', 'tag3']
     }
 
     # Make a PUT request to update the prompt with the updated data
-    response = client.put(f'/prompt/{created_prompt.prompt_id}', json=updated_data)
+    response = client.put(f'/api/prompt/{created_prompt.prompt_id}', json=updated_data)
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200
@@ -96,7 +96,7 @@ def test_update_prompt(client, created_prompt):
 
 def test_delete_prompt(client, created_prompt):
     # Make a DELETE request to delete the prompt
-    response = client.delete(f'/prompt/{created_prompt.prompt_id}')
+    response = client.delete(f'/api/prompt/{created_prompt.prompt_id}')
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200

@@ -47,9 +47,8 @@ def update_prompt(prompt_id):
     try:
         prompt = Prompt.objects.get(prompt_id=prompt_id)
         prompt_schema = PromptSchema(partial=True)
-        data = prompt_schema.load(request.json)
-        prompt.update(**data)
-        prompt.version += 1
+        prompt_schema.load(request.json)
+        prompt.update(**request.json)
         prompt.save()
         logger.info(f"Prompt updated successfully: {prompt_id}")
         return jsonify({'message': 'Prompt updated successfully'}), 200
@@ -93,10 +92,10 @@ def create_prompt():
     :return: JSON response containing the success message and the ID of the newly created prompt.
     """
     try:
-        prompt_schema = PromptSchema()
-        data = prompt_schema.load(request.json)
+        prompt_schema = PromptSchema(partial=True)
+        prompt = prompt_schema.load(request.json)
         prompt_id = str(uuid.uuid4())
-        prompt = Prompt(prompt_id=prompt_id, version=1, **data)
+        prompt.prompt_id = prompt_id
         prompt.save()
         logger.info(f"Prompt created successfully: {prompt_id}")
         return jsonify({'message': 'Prompt created successfully', 'prompt_id': prompt_id}), 201

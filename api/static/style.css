@@ -1,32 +1,187 @@
+:root {
+  --primary-color: #3498db;
+  --success-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --secondary-color: #95a5a6;
+  --white-color: #fff;
+  --border-radius: 0.25rem;
+  --transition-duration: 0.3s;
+}
+
+/* Base Styles */
 .prompt-content {
-    max-height: 8em;
-    overflow: hidden;
+  max-height: 8em;
+  overflow: hidden;
 }
 
 .prompt-content pre {
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre-wrap;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
 }
 
+/* Tag Styles */
 .tag {
-    display: inline-block;
-    padding: 0.25em 0.4em;
-    font-size: 75%;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25rem;
-    color: #fff;
-    background-color: #6c757d;
-    text-decoration: none;
-    margin-right: 0.5rem;
+  display: inline-block;
+  padding: 0.25em 0.4em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--border-radius);
+  color: var(--white-color);
+  background-color: var(--secondary-color);
+  text-decoration: none;
+  margin-right: 0.5rem;
+  transition: background-color var(--transition-duration) ease;
 }
 
 .tag:hover {
-    color: #fff;
-    background-color: #5a6268;
+  color: var(--white-color);
+  background-color: #7f8c8d;
+}
+
+/* Additional Styles */
+.navbar-brand {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--secondary-color);
+}
+
+/* Button Styles */
+.btn-action {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-secondary:hover {
+  background-color: #27ae60;
+  border-color: #27ae60;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+
+.btn-outline-secondary {
+  border-color: var(--secondary-color);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--secondary-color);
+  color: var(--white-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-success:hover {
+  background-color: #27ae60;
+  border-color: #27ae60;
+}
+
+/* Custom Badge Styles */
+.custom-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.custom-badge .custom-close {
+  margin-left: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--white-color);
+  font-size: 0.875rem;
+  line-height: 1;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.custom-badge .custom-close:hover {
+  opacity: 1;
+}
+
+.card-text {
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.page-item {
+  margin: 0 0.25rem;
+}
+
+.page-link {
+  color: var(--primary-color);
+  background-color: var(--white-color);
+  border: 1px solid var(--secondary-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
+}
+
+.page-link:hover {
+  color: var(--white-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.page-item.active .page-link {
+  color: var(--white-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.page-item.disabled .page-link {
+  color: var(--secondary-color);
+  pointer-events: none;
+  background-color: var(--white-color);
+  border-color: var(--secondary-color);
 }

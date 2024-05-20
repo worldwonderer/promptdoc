@@ -3,23 +3,52 @@
 {% block title %}Prompt Detail{% endblock %}
 
 {% block content %}
-    <h1>Prompt Detail</h1>
+<h1 class="mb-4">Prompt ID: <span class="text-muted">{{ prompt.prompt_id }}</span></h1>
+<div class="container mt-4">
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">{{ prompt.prompt_id }}</h5>
-            <p class="card-text"><strong>Content:</strong> {{ prompt.content }}</p>
-            <p class="card-text"><strong>Variables:</strong> {{ prompt.variables|join(', ') }}</p>
-            <p class="card-text"><strong>Example:</strong> {{ prompt.example }}</p>
-            <p class="card-text"><strong>Version:</strong> {{ prompt.version }}</p>
-            <p class="card-text"><strong>Applicable LLM:</strong> {{ prompt.applicable_llm }}</p>
-            <p class="card-text"><strong>Created At:</strong> {{ prompt.created_at }}</p>
-            <p class="card-text"><strong>Updated At:</strong> {{ prompt.updated_at }}</p>
-            <p class="card-text"><strong>Tags:</strong> {{ prompt.tags|join(', ') }}</p>
-            <a href="/prompts" class="btn btn-secondary">Back to List</a>
-            <a href="/prompt/{{ prompt.prompt_id }}/edit" class="btn btn-primary">Edit</a>
-            <form action="/prompt/{{ prompt.prompt_id }}/delete" method="POST" style="display: inline;">
-                <button type="submit" class="btn btn-danger" onclick="return confirmDelete();">Delete</button>
-            </form>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Content:</h6>
+                <pre class="card-text">{{ prompt.content }}</pre>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Variables:</h6>
+                <p class="card-text">{{ prompt.variables|join(', ') }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Example:</h6>
+                <pre class="card-text">{{ prompt.example }}</pre>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Version:</h6>
+                <p class="card-text">{{ prompt.version }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Applicable LLM:</h6>
+                <p class="card-text">{{ prompt.applicable_llm }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Created At:</h6>
+                <p class="card-text">{{ prompt.created_at }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Updated At:</h6>
+                <p class="card-text">{{ prompt.updated_at }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="card-subtitle mb-2 text-muted">Tags:</h6>
+                <p class="card-text">{{ prompt.tags|join(', ') }}</p>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="/admin/prompts" class="btn btn-secondary">Back to List</a>
+                <div>
+                    <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="btn btn-primary">Edit</a>
+                    <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this prompt?')">Delete</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}
