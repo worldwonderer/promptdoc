@@ -1,7 +1,14 @@
+import os
+
 import pytest
 
 from api.index import app
 from api.models import Prompt
+
+
+headers = {
+    'Authorization': 'Bearer {token}'.format(token=os.getenv('AUTH_TOKEN', 'your_token_here'))
+}
 
 
 @pytest.fixture
@@ -22,7 +29,7 @@ def test_create_prompt(client):
     }
 
     # Make a POST request to create a new prompt
-    response = client.post('/api/prompt', json=data)
+    response = client.post('/api/prompt', json=data, headers=headers)
 
     # Check that the response status code is 201 (Created)
     assert response.status_code == 201
@@ -36,7 +43,7 @@ def test_create_prompt(client):
 
 def test_get_prompt_list(client):
     # Make a GET request to retrieve the list of prompts
-    response = client.get('/api/prompts')
+    response = client.get('/api/prompts', headers=headers)
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200
@@ -79,7 +86,7 @@ def test_update_prompt(client, created_prompt):
     }
 
     # Make a PUT request to update the prompt with the updated data
-    response = client.put(f'/api/prompt/{created_prompt.prompt_id}', json=updated_data)
+    response = client.put(f'/api/prompt/{created_prompt.prompt_id}', json=updated_data, headers=headers)
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200
@@ -96,7 +103,7 @@ def test_update_prompt(client, created_prompt):
 
 def test_delete_prompt(client, created_prompt):
     # Make a DELETE request to delete the prompt
-    response = client.delete(f'/api/prompt/{created_prompt.prompt_id}')
+    response = client.delete(f'/api/prompt/{created_prompt.prompt_id}', headers=headers)
 
     # Check that the response status code is 200 (OK)
     assert response.status_code == 200
