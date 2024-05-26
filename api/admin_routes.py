@@ -2,6 +2,7 @@ import os
 import ast
 import uuid
 from functools import wraps
+from datetime import datetime
 
 import pyotp
 from marshmallow.exceptions import ValidationError
@@ -110,6 +111,7 @@ def edit_prompt(prompt_id):
         prompt_schema = PromptSchema(partial=True)
         prompt_schema.load(form_data)
         prompt.update(**form_data)
+        prompt.updated_at = datetime.now()
         prompt.save()
         return redirect('/admin/prompts')
     return render_template('prompt_form.html', prompt=prompt)

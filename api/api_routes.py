@@ -2,6 +2,7 @@ import os
 import uuid
 import logging
 from functools import wraps
+from datetime import datetime
 
 from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
@@ -65,6 +66,7 @@ def update_prompt(prompt_id):
         prompt_schema = PromptSchema(partial=True)
         prompt_schema.load(request.json)
         prompt.update(**request.json)
+        prompt.updated_at = datetime.now()
         prompt.save()
         logger.info(f"Prompt updated successfully: {prompt_id}")
         return jsonify({'message': 'Prompt updated successfully'}), 200
