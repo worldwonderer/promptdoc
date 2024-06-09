@@ -20,8 +20,8 @@
         <tr>
             <th>ID</th>
             <th style="width: 50%;">Content</th>
-            <th>Version</th>
             <th>Tags</th>
+            <th>Model</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -34,12 +34,12 @@
                     <pre>{{ prompt.content }}</pre>
                 </div>
             </td>
-            <td>{{ prompt.version }}</td>
             <td>
                 {% for tag in prompt.tags %}
                     <a href="{{ url_for('admin.prompt_list', tag=tag) }}" class="tag">{{ tag }}</a>
                 {% endfor %}
             </td>
+            <td>{{ prompt.applicable_llm }}</td>
             <td>
                 <div class="btn-group" role="group">
                     <a href="/admin/prompt/{{ prompt.prompt_id }}" class="btn btn-sm btn-primary btn-action btn-custom">View</a>
