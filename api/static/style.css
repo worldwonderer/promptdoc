@@ -216,3 +216,13 @@ footer p {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
+
+.modal-xl {
+  max-width: 90%;
+  width: 90%;
+}
+
+.formatted-prompt {
+  max-height: 60vh;
+  overflow-y: auto;
+}

@@ -16,8 +16,24 @@
                 <p class="card-text">{{ prompt.variables|join(', ') }}</p>
             </div>
             <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Example:</h6>
-                <pre class="card-text">{{ prompt.example }}</pre>
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="card-subtitle mb-2 text-muted">Example:</h6>
+                <button type="button" class="btn btn-sm btn-primary btn-action btn-custom" data-bs-toggle="modal" data-bs-target="#previewModal">
+                  Preview
+                </button>
+            </div>
+            {% for key, value in prompt.example.items() -%}
+              <strong>{{ key }}:</strong>
+              {%- if value is string -%}
+                {%- if value|tojson is mapping -%}
+                  <pre class="card-text" style="max-height: 300px; overflow: auto;"><code>{{ value|tojson(indent=2) }}</code></pre>
+                {%- else -%}
+                  <pre class="card-text" style="max-height: 300px; overflow: auto;">{{ value }}</pre>
+                {%- endif -%}
+              {%- else -%}
+                <pre class="card-text" style="max-height: 300px; overflow: auto;">{{ value }}</pre>
+              {%- endif -%}
+            {% endfor -%}
             </div>
             <div class="mb-3">
                 <h6 class="card-subtitle mb-2 text-muted">Version:</h6>
@@ -28,17 +44,18 @@
                 <p class="card-text">{{ prompt.applicable_llm }}</p>
             </div>
             <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Created At:</h6>
-                <p class="card-text">{{ prompt.created_at }}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Tags:</h6>
+                <p class="card-text">{{ prompt.tags|join(', ') }}</p>
             </div>
             <div class="mb-3">
                 <h6 class="card-subtitle mb-2 text-muted">Updated At:</h6>
                 <p class="card-text">{{ prompt.updated_at }}</p>
             </div>
             <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Tags:</h6>
-                <p class="card-text">{{ prompt.tags|join(', ') }}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Created At:</h6>
+                <p class="card-text">{{ prompt.created_at }}</p>
             </div>
+
             <div class="d-flex justify-content-between">
                 <a href="/admin/prompts" class="btn btn-secondary">Back to List</a>
                 <div>
@@ -50,5 +67,26 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewModalLabel">Formatted Prompt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-body">
+            <pre class="card-text formatted-prompt">{{ prompt.content|render_template(prompt.example) }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
