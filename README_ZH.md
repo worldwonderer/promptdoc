@@ -31,7 +31,7 @@
     ```bash
     python tool.py
     export ADMIN_SECRET=<admin secret>
-    export AUTH_SECRET=<api secret>
+    export AUTH_TOKEN=<api token>
     ```
 
 5. 运行 Flask 应用
@@ -55,7 +55,7 @@
 
 ```bash
 curl --location 'http://127.0.0.1:5000/api/prompts' \
---header 'Authorization: Bearer {AUTH_SECRET}'
+--header 'Authorization: Bearer {AUTH_TOKEN}'
 ```
 
 完整接口示例可参考`.\tests\test_api.py`

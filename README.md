@@ -24,7 +24,7 @@ This project is designed to manage a collection of Prompt templates for multiple
     ```bash
     python tool.py
     export ADMIN_SECRET=<admin secret>
-    export AUTH_SECRET=<api secret>
+    export AUTH_TOKEN=<api token>
     ```
 5. Run Flask application
    ```bash
@@ -39,7 +39,7 @@ By default, dynamic verification code authentication is enabled. You need to ope
 ### API Examples
 ```bash
 curl --location 'http://127.0.0.1:5000/api/prompts' \
---header 'Authorization: Bearer {AUTH_SECRET}'
+--header 'Authorization: Bearer {AUTH_TOKEN}'
 ```
 For complete API examples, please refer to `.\tests\test_api.py`.
 ## Contributing

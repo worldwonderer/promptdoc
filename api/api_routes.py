@@ -1,4 +1,3 @@
-import os
 import uuid
 import logging
 from functools import wraps
@@ -6,25 +5,44 @@ from datetime import datetime
 
 from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
+from mongoengine.errors import ValidationError as MongoValidationError
 
 from .models import Prompt, PromptSchema
+from .config import get_auth_token
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 logger = logging.getLogger(__name__)
 
-AUTH_TOKEN = os.getenv('AUTH_TOKEN', 'your_token_here')
+MAX_PER_PAGE = 100
 
 
 def error_response(message, status_code):
     return jsonify({'error': message}), status_code
 
 
+def parse_positive_int_arg(name, default_value, max_value=None):
+    raw_value = request.args.get(name, str(default_value))
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return None, f"Invalid '{name}' parameter: must be an integer."
+    if value < 1:
+        return None, f"Invalid '{name}' parameter: must be greater than 0."
+    if max_value is not None and value > max_value:
+        return None, f"Invalid '{name}' parameter: must be less than or equal to {max_value}."
+    return value, None
+
+
 def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        configured_token = get_auth_token()
+        if not configured_token:
+            logger.error('API auth token is not configured. Set AUTH_TOKEN.')
+            return error_response('Server authentication token is not configured', 503)
         token = request.headers.get('Authorization')
-        if token != f"Bearer {AUTH_TOKEN}":
+        if token != f"Bearer {configured_token}":
             return error_response('Unauthorized', 401)
         return f(*args, **kwargs)
     return decorated_function
@@ -63,17 +81,22 @@ def update_prompt(prompt_id):
     """
     try:
         prompt = Prompt.objects.get(prompt_id=prompt_id)
+        payload = request.get_json(silent=True)
+        if payload is None or not isinstance(payload, dict):
+            return error_response('Invalid request payload', 400)
         prompt_schema = PromptSchema(partial=True)
-        prompt_schema.load(request.json)
-        prompt.update(**request.json)
-        prompt.updated_at = datetime.now()
-        prompt.save()
+        validation_errors = prompt_schema.validate(payload, partial=True)
+        if validation_errors:
+            raise ValidationError(validation_errors)
+        payload.pop('prompt_id', None)
+        payload['updated_at'] = datetime.now()
+        prompt.update(**payload)
         logger.info(f"Prompt updated successfully: {prompt_id}")
         return jsonify({'message': 'Prompt updated successfully'}), 200
     except Prompt.DoesNotExist:
         logger.exception(f"Prompt not found: {prompt_id}")
         return error_response('Prompt not found', 404)
-    except ValidationError as e:
+    except (ValidationError, MongoValidationError) as e:
         logger.exception(f"Invalid request payload: {str(e)}")
         return error_response('Invalid request payload', 400)
     except Exception as e:
@@ -112,14 +135,20 @@ def create_prompt():
     :return: JSON response containing the success message and the ID of the newly created prompt.
     """
     try:
-        prompt_schema = PromptSchema(partial=True)
-        prompt = prompt_schema.load(request.json)
+        payload = request.get_json(silent=True)
+        if payload is None or not isinstance(payload, dict):
+            return error_response('Invalid request payload', 400)
         prompt_id = str(uuid.uuid4())
-        prompt.prompt_id = prompt_id
+        payload = {**payload, 'prompt_id': prompt_id}
+        prompt_schema = PromptSchema(partial=True)
+        validation_errors = prompt_schema.validate(payload)
+        if validation_errors:
+            raise ValidationError(validation_errors)
+        prompt = prompt_schema.load(payload)
         prompt.save()
         logger.info(f"Prompt created successfully: {prompt_id}")
         return jsonify({'message': 'Prompt created successfully', 'prompt_id': prompt_id}), 201
-    except ValidationError as e:
+    except (ValidationError, MongoValidationError) as e:
         logger.exception(f"Invalid request payload: {str(e)}")
         return error_response('Invalid request payload', 400)
     except Exception as e:
@@ -138,8 +167,12 @@ def get_prompt_list():
     try:
         tag = request.args.get('tag')
         search = request.args.get('search')
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 10))
+        page, error = parse_positive_int_arg('page', 1)
+        if error:
+            return error_response(error, 400)
+        per_page, error = parse_positive_int_arg('per_page', 10, max_value=MAX_PER_PAGE)
+        if error:
+            return error_response(error, 400)
         sort_by = '-created_at'
 
         query = Prompt.objects.order_by(sort_by)
