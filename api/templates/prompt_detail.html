@@ -3,90 +3,144 @@
 {% block title %}Prompt Detail{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Prompt ID: <span class="text-muted">{{ prompt.prompt_id }}</span></h1>
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-body">
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Content:</h6>
-                <pre class="card-text">{{ prompt.content }}</pre>
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Variables:</h6>
-                <p class="card-text">{{ prompt.variables|join(', ') }}</p>
-            </div>
-            <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <h6 class="card-subtitle mb-2 text-muted">Example:</h6>
-                <button type="button" class="btn btn-sm btn-primary btn-action btn-custom" data-bs-toggle="modal" data-bs-target="#previewModal">
-                  Preview
-                </button>
-            </div>
-            {% for key, value in prompt.example.items() -%}
-              <strong>{{ key }}:</strong>
-              {%- if value is string -%}
-                {%- if value|tojson is mapping -%}
-                  <pre class="card-text" style="max-height: 300px; overflow: auto;"><code>{{ value|tojson(indent=2) }}</code></pre>
-                {%- else -%}
-                  <pre class="card-text" style="max-height: 300px; overflow: auto;">{{ value }}</pre>
-                {%- endif -%}
-              {%- else -%}
-                <pre class="card-text" style="max-height: 300px; overflow: auto;">{{ value }}</pre>
-              {%- endif -%}
-            {% endfor -%}
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Version:</h6>
-                <p class="card-text">{{ prompt.version }}</p>
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Applicable LLM:</h6>
-                <p class="card-text">{{ prompt.applicable_llm }}</p>
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Tags:</h6>
-                <p class="card-text">{{ prompt.tags|join(', ') }}</p>
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Updated At:</h6>
-                <p class="card-text">{{ prompt.updated_at }}</p>
-            </div>
-            <div class="mb-3">
-                <h6 class="card-subtitle mb-2 text-muted">Created At:</h6>
-                <p class="card-text">{{ prompt.created_at }}</p>
-            </div>
+<div x-data="{ showPreview: false }">
+    <div class="mb-6">
+        <a href="/admin/prompts" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to list
+        </a>
+    </div>
 
-            <div class="d-flex justify-content-between">
-                <a href="/admin/prompts" class="btn btn-secondary">Back to List</a>
+    <div class="max-w-3xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prompt Detail</h1>
+                <p class="text-sm font-mono text-gray-400 dark:text-gray-500 mt-1">{{ prompt.prompt_id }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Edit
+                </a>
+                <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" class="inline" onclick="return confirm('Are you sure you want to delete this prompt?')">
+                    <button type="submit" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Metadata Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                    <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="btn btn-primary">Edit</a>
-                    <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this prompt?')">Delete</button>
-                    </form>
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</dt>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ prompt.version }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Model</dt>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ prompt.applicable_llm }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</dt>
+                    <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ prompt.created_at.strftime('%Y-%m-%d') if prompt.created_at else '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Updated</dt>
+                    <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ prompt.updated_at.strftime('%Y-%m-%d') if prompt.updated_at else '—' }}</dd>
+                </div>
+            </div>
+            {% if prompt.tags %}
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tag in prompt.tags %}
+                    <a href="{{ url_for('admin.prompt_list', tag=tag) }}" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium text-white tag-{{ loop.index0 % 8 }} hover:opacity-80 transition-opacity">
+                        {{ tag }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Content Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Content</h2>
+            </div>
+            <div class="p-6">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-700">{{ prompt.content }}</pre>
+            </div>
+        </div>
+
+        <!-- Variables Card -->
+        {% if prompt.variables %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Variables</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-2">
+                    {% for v in prompt.variables %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-mono bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">{{ '{{' }} {{ v }} {{ '}}' }}</span>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
-</div>
+        {% endif %}
 
-<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="previewModalLabel">Formatted Prompt</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="card">
-          <div class="card-body">
-            <pre class="card-text formatted-prompt">{{ formatted_prompt }}</pre>
-          </div>
+        <!-- Example Card -->
+        {% if prompt.example %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Example Values</h2>
+                <button type="button" @click="showPreview = true" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium transition-colors">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    Preview
+                </button>
+            </div>
+            <div class="p-6 space-y-3">
+                {% for key, value in prompt.example.items() %}
+                <div class="flex items-start gap-3">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 shrink-0">{{ key }}</span>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 font-mono">
+                        {%- if value is string -%}
+                            {%- if value|tojson is mapping -%}
+                        <pre class="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs overflow-auto max-h-48 border border-gray-100 dark:border-gray-700">{{ value|tojson(indent=2) }}</pre>
+                            {%- else -%}
+                        <span>{{ value }}</span>
+                            {%- endif -%}
+                        {%- else -%}
+                        <pre class="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs overflow-auto max-h-48 border border-gray-100 dark:border-gray-700">{{ value }}</pre>
+                        {%- endif -%}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+        {% endif %}
     </div>
-  </div>
+
+    <!-- Preview Modal -->
+    <template x-teleport="body">
+        <div x-show="showPreview" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="showPreview = false" x-cloak>
+            <div x-show="showPreview" x-transition class="w-full max-w-4xl max-h-[85vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Prompt Preview</h3>
+                    <button @click="showPreview = false" class="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6">
+                    <pre class="formatted-prompt whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-700">{{ formatted_prompt }}</pre>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <button @click="showPreview = false" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Close</button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 {% endblock %}

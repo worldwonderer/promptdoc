@@ -1,228 +1,95 @@
-:root {
-  --primary-color: #3498db;
-  --success-color: #2ecc71;
-  --danger-color: #e74c3c;
-  --secondary-color: #95a5a6;
-  --white-color: #fff;
-  --border-radius: 0.25rem;
-  --transition-duration: 0.3s;
+/* Custom styles beyond Tailwind utility classes */
+
+/* Code / pre block formatting */
+pre, code {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
 }
 
-/* Base Styles */
+pre {
+    tab-size: 4;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+/* Prompt content truncation in list view */
 .prompt-content {
-  max-height: 8em;
-  overflow: hidden;
+    max-height: 5rem;
+    overflow: hidden;
+    position: relative;
 }
 
-.prompt-content pre {
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: pre-wrap;
+.prompt-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2rem;
+    background: linear-gradient(transparent, rgba(255, 255, 255, 0.9));
 }
 
-/* Tag Styles */
-.tag {
-  display: inline-block;
-  padding: 0.25em 0.4em;
-  font-size: 75%;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: var(--border-radius);
-  color: var(--white-color);
-  background-color: var(--secondary-color);
-  text-decoration: none;
-  margin-right: 0.5rem;
-  transition: background-color var(--transition-duration) ease;
+.dark .prompt-content::after {
+    background: linear-gradient(transparent, rgba(31, 41, 55, 0.9));
 }
 
-.tag:hover {
-  color: var(--white-color);
-  background-color: #7f8c8d;
-}
-
-/* Additional Styles */
-.navbar-brand {
-  font-weight: bold;
-  color: var(--primary-color);
-}
-
-footer p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--secondary-color);
-}
-
-/* Button Styles */
-.btn-action {
-  margin-right: 5px;
-  margin-bottom: 5px;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-  background-color: #2980b9;
-  border-color: #2980b9;
-}
-
-.btn-secondary {
-  background-color: var(--success-color);
-  border-color: var(--success-color);
-}
-
-.btn-secondary:hover {
-  background-color: #27ae60;
-  border-color: #27ae60;
-}
-
-.btn-danger {
-  background-color: var(--danger-color);
-  border-color: var(--danger-color);
-}
-
-.btn-danger:hover {
-  background-color: #c0392b;
-  border-color: #c0392b;
-}
-
-.btn-outline-secondary {
-  border-color: var(--secondary-color);
-}
-
-.btn-outline-secondary:hover {
-  background-color: var(--secondary-color);
-  color: var(--white-color);
-  border-color: var(--secondary-color);
-}
-
-.btn-success {
-  background-color: var(--success-color);
-  border-color: var(--success-color);
-}
-
-.btn-success:hover {
-  background-color: #27ae60;
-  border-color: #27ae60;
-}
-
-/* Custom Badge Styles */
-.custom-badge {
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--primary-color);
-  color: var(--white-color);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-
-.custom-badge .custom-close {
-  margin-left: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--white-color);
-  font-size: 0.875rem;
-  line-height: 1;
-  opacity: 0.7;
-  cursor: pointer;
-}
-
-.custom-badge .custom-close:hover {
-  opacity: 1;
-}
-
-.card-text {
-  max-height: 300px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: monospace;
-}
-
-/* Pagination Styles */
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
-.page-item {
-  margin: 0 0.25rem;
-}
-
-.page-link {
-  color: var(--primary-color);
-  background-color: var(--white-color);
-  border: 1px solid var(--secondary-color);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius);
-  text-decoration: none;
-  transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
-}
-
-.page-link:hover {
-  color: var(--white-color);
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.page-item.active .page-link {
-  color: var(--white-color);
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.page-item.disabled .page-link {
-  color: var(--secondary-color);
-  pointer-events: none;
-  background-color: var(--white-color);
-  border-color: var(--secondary-color);
-}
-
-.login-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid var(--secondary-color);
-  border-radius: var(--border-radius);
-  background-color: var(--white-color);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.login-container h1 {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.form-label {
-  font-weight: bold;
-  color: var(--secondary-color);
-}
-
-.form-control {
-  border-radius: var(--border-radius);
-  border: 1px solid var(--secondary-color);
-  transition: border-color var(--transition-duration) ease;
-}
-
-.form-control:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-}
-
-.modal-xl {
-  max-width: 90%;
-  width: 90%;
-}
-
+/* Formatted prompt in modal */
 .formatted-prompt {
-  max-height: 60vh;
-  overflow-y: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Badge close button */
+.badge-close {
+    margin-left: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.badge-close:hover {
+    opacity: 1;
+}
+
+/* Table row hover transition */
+.table-row-hover {
+    transition: background-color 0.15s ease;
+}
+
+/* Tag colors — cycling palette */
+.tag-0 { background-color: #3b82f6; }
+.tag-1 { background-color: #8b5cf6; }
+.tag-2 { background-color: #ec4899; }
+.tag-3 { background-color: #f97316; }
+.tag-4 { background-color: #14b8a6; }
+.tag-5 { background-color: #06b6d4; }
+.tag-6 { background-color: #84cc16; }
+.tag-7 { background-color: #f43f5e; }
+
+/* Print styles */
+@media print {
+    nav, footer, .no-print { display: none !important; }
+    main { padding: 0 !important; max-width: 100% !important; }
 }

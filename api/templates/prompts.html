@@ -3,101 +3,134 @@
 {% block title %}Prompts{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-4">Prompts</h1>
-    <a href="/admin/prompt/create" class="btn btn-success btn-custom">Create Prompt</a>
-</div>
-
-<form class="mb-3" method="get" action="/admin/prompts">
-    <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="Search by content" aria-label="Search" aria-describedby="button-search" value="{{ request.args.get('search', '') }}">
-        <button class="btn btn-outline-secondary btn-custom" type="submit" id="button-search">Search</button>
+<div x-data="{ search: '{{ request.args.get("search", "") }}' }">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prompts</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ total_count }} template{{ 's' if total_count != 1 else '' }} total</p>
+        </div>
+        <a href="/admin/prompt/create" class="inline-flex items-center px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition-colors shadow-sm">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Create Prompt
+        </a>
     </div>
-</form>
 
-<table class="table table-striped table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th style="width: 50%;">Content</th>
-            <th>Tags</th>
-            <th>Model</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for prompt in prompts %}
-        <tr>
-            <td>{{ prompt.prompt_id[:8] }}</td>
-            <td>
-                <div class="prompt-content">
-                    <pre>{{ prompt.content }}</pre>
-                </div>
-            </td>
-            <td>
-                {% for tag in prompt.tags %}
-                    <a href="{{ url_for('admin.prompt_list', tag=tag) }}" class="tag">{{ tag }}</a>
-                {% endfor %}
-            </td>
-            <td>{{ prompt.applicable_llm }}</td>
-            <td>
-                <div class="btn-group" role="group">
-                    <a href="/admin/prompt/{{ prompt.prompt_id }}" class="btn btn-sm btn-primary btn-action btn-custom">View</a>
-                    <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="btn btn-sm btn-secondary btn-action btn-custom">Edit</a>
-                    <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-sm btn-danger btn-action btn-custom" onclick="return confirm('Are you sure you want to delete this prompt?')">Delete</button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% if total_count > per_page %}
-<nav aria-label="Prompt list pagination">
-    <ul class="pagination justify-content-center">
-        {% if page > 1 %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('admin.prompt_list', page=page-1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
+    <!-- Search & Filter -->
+    <form method="get" action="/admin/prompts" class="mb-6">
+        <div class="flex gap-3">
+            <div class="relative flex-1">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" name="search" x-model="search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors text-sm" placeholder="Search by content...">
+            </div>
+            {% if request.args.get('tag') %}
+            <a href="{{ url_for('admin.prompt_list', search=request.args.get('search', '')) }}" class="inline-flex items-center px-3 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                {{ request.args.get('tag') }}
+                <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% endif %}
-
-        {% set total_pages = (total_count + per_page - 1) // per_page %}
-
-        {% for i in range(1, total_pages + 1) %}
-            {% if i == page %}
-            <li class="page-item active" aria-current="page">
-                <a class="page-link" href="{{ url_for('admin.prompt_list', page=i, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}">{{ i }}</a>
-            </li>
-            {% else %}
-            <li class="page-item">
-                <a class="page-link" href="{{ url_for('admin.prompt_list', page=i, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}">{{ i }}</a>
-            </li>
             {% endif %}
-        {% endfor %}
+            <button type="submit" class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Search
+            </button>
+        </div>
+    </form>
 
-        {% if page < total_pages %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('admin.prompt_list', page=page+1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
+    <!-- Prompt List -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-24">ID</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3">Content</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-40">Tags</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">Model</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% for prompt in prompts %}
+                    <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="px-4 py-3">
+                            <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ prompt.prompt_id[:8] }}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <a href="/admin/prompt/{{ prompt.prompt_id }}" class="block group">
+                                <div class="prompt-content text-sm text-gray-700 dark:text-gray-300 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                                    <pre class="whitespace-pre-wrap">{{ prompt.content }}</pre>
+                                </div>
+                            </a>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-1.5">
+                                {% for tag in prompt.tags %}
+                                <a href="{{ url_for('admin.prompt_list', tag=tag) }}" class="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white tag-{{ loop.index0 % 8 }} hover:opacity-80 transition-opacity">
+                                    {{ tag }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ prompt.applicable_llm }}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="/admin/prompt/{{ prompt.prompt_id }}" class="p-1.5 rounded-md text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:text-brand-400 dark:hover:bg-brand-900/20 transition-colors" title="View">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:text-amber-400 dark:hover:bg-amber-900/20 transition-colors" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                                <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" class="inline" onclick="return confirm('Are you sure you want to delete this prompt?')">
+                                    <button type="submit" class="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-colors" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not prompts %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-12 text-center text-gray-400 dark:text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <p class="text-sm">No prompts found</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_count > per_page %}
+    {% set total_pages = (total_count + per_page - 1) // per_page %}
+    <nav class="flex justify-center mt-6" aria-label="Pagination">
+        <div class="flex items-center gap-1">
+            {% if page > 1 %}
+            <a href="{{ url_for('admin.prompt_list', page=page-1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                &laquo; Prev
             </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
+            {% endif %}
+
+            {% for i in range(1, total_pages + 1) %}
+                {% if i == page %}
+                <span class="px-3 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white">{{ i }}</span>
+                {% elif i == 1 or i == total_pages or (i >= page - 2 and i <= page + 2) %}
+                <a href="{{ url_for('admin.prompt_list', page=i, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">{{ i }}</a>
+                {% elif i == page - 3 or i == page + 3 %}
+                <span class="px-2 py-2 text-gray-400">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="{{ url_for('admin.prompt_list', page=page+1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                Next &raquo;
             </a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+</div>
 {% endblock %}

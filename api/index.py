@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
@@ -21,3 +21,8 @@ app.register_blueprint(bp)
 app.register_blueprint(admin_bp)
 app.secret_key = os.environ.get('SECRET_KEY')
 app.permanent_session_lifetime = timedelta(hours=2)
+
+
+@app.context_processor
+def inject_now():
+    return {'now': datetime.now()}
