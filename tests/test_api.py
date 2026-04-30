@@ -1,35 +1,10 @@
-import os
 import uuid
 
 import pytest
 
-
-os.environ.setdefault('AUTH_TOKEN', 'test_auth_token')
-
-from api.index import app
 from api import admin_routes
 from api.models import Prompt
-
-
-TEST_MARKER_TAG = '__pytest__'
-
-
-def auth_headers(token=None):
-    auth_token = token if token is not None else os.getenv('AUTH_TOKEN', '')
-    return {'Authorization': f'Bearer {auth_token}'}
-
-
-def build_prompt_payload(**overrides):
-    payload = {
-        'content': 'Test prompt content',
-        'variables': ['variable1', 'variable2'],
-        'example': {'variable1': 'example1', 'variable2': 'example2'},
-        'version': '1',
-        'applicable_llm': 'LLM1',
-        'tags': ['tag1', TEST_MARKER_TAG],
-    }
-    payload.update(overrides)
-    return payload
+from tests.helpers import TEST_MARKER_TAG, auth_headers, build_prompt_payload
 
 
 @pytest.fixture(autouse=True)
@@ -37,19 +12,6 @@ def cleanup_test_prompts():
     yield
     Prompt.objects(tags__in=[TEST_MARKER_TAG]).delete()
     Prompt.objects(prompt_id__startswith='test-').delete()
-
-
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
-
-
-@pytest.fixture
-def logged_in_client(client):
-    with client.session_transaction() as session_data:
-        session_data['logged_in'] = True
-    return client
 
 
 @pytest.fixture
@@ -61,6 +23,9 @@ def created_prompt():
     prompt.save()
     yield prompt
     Prompt.objects(prompt_id=prompt.prompt_id).delete()
+
+
+# --- Original tests ---
 
 
 def test_create_prompt(client):
@@ -194,3 +159,96 @@ def test_admin_login_returns_503_when_secret_missing(client, monkeypatch):
     response = client.post('/admin/login', data={'auth_code': '123456'})
     assert response.status_code == 503
     assert 'Admin secret is not configured' in response.get_data(as_text=True)
+
+
+# --- New integration tests ---
+
+
+def test_get_prompt_detail(client, created_prompt):
+    response = client.get(f'/api/prompt/{created_prompt.prompt_id}', headers=auth_headers())
+    assert response.status_code == 200
+    assert response.json['prompt_id'] == created_prompt.prompt_id
+    assert response.json['content'] == created_prompt.content
+
+
+def test_get_prompt_detail_not_found(client):
+    response = client.get('/api/prompt/nonexistent-id', headers=auth_headers())
+    assert response.status_code == 404
+    assert response.json == {'error': 'Prompt not found'}
+
+
+def test_update_prompt_not_found(client):
+    response = client.put('/api/prompt/nonexistent-id', json={'content': 'x'}, headers=auth_headers())
+    assert response.status_code == 404
+
+
+def test_delete_prompt_not_found(client):
+    response = client.delete('/api/prompt/nonexistent-id', headers=auth_headers())
+    assert response.status_code == 404
+
+
+def test_update_prompt_partial(client, created_prompt):
+    response = client.put(
+        f'/api/prompt/{created_prompt.prompt_id}',
+        json={'version': '2'},
+        headers=auth_headers(),
+    )
+    assert response.status_code == 200
+    updated = Prompt.objects.get(prompt_id=created_prompt.prompt_id)
+    assert updated.version == '2'
+
+
+def test_create_prompt_rejects_invalid_json(client):
+    response = client.post(
+        '/api/prompt',
+        data='not json',
+        headers={**auth_headers(), 'Content-Type': 'application/json'},
+    )
+    assert response.status_code == 400
+
+
+def test_list_pagination_last_page(client):
+    for i in range(3):
+        data = build_prompt_payload(prompt_id=f"test-page-{uuid.uuid4()}", tags=[TEST_MARKER_TAG])
+        Prompt(**data).save()
+
+    response = client.get('/api/prompts?page=999&per_page=1', headers=auth_headers())
+    assert response.status_code == 200
+    assert response.json['pagination']['total_pages'] >= 1
+
+
+def test_list_tag_filter(client):
+    data = build_prompt_payload(
+        prompt_id=f"test-tag-{uuid.uuid4()}",
+        tags=['unique-filter-tag', TEST_MARKER_TAG],
+    )
+    Prompt(**data).save()
+
+    response = client.get('/api/prompts?tag=unique-filter-tag', headers=auth_headers())
+    assert response.status_code == 200
+    assert len(response.json['data']) >= 1
+    for p in response.json['data']:
+        assert 'unique-filter-tag' in p['tags']
+
+
+def test_list_search(client):
+    data = build_prompt_payload(
+        prompt_id=f"test-search-{uuid.uuid4()}",
+        content='unique search content xyz123',
+    )
+    data['tags'] = [TEST_MARKER_TAG]
+    Prompt(**data).save()
+
+    response = client.get('/api/prompts?search=xyz123', headers=auth_headers())
+    assert response.status_code == 200
+    assert len(response.json['data']) >= 1
+
+
+def test_api_rejects_invalid_token(client):
+    response = client.get('/api/prompts', headers={'Authorization': 'Bearer wrong-token'})
+    assert response.status_code == 401
+
+
+def test_api_rejects_missing_auth_header(client):
+    response = client.get('/api/prompts')
+    assert response.status_code == 401
