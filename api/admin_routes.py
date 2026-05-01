@@ -3,6 +3,7 @@ import ast
 import uuid
 import json
 import re
+import secrets
 import difflib
 from functools import wraps
 from datetime import datetime
@@ -235,3 +236,23 @@ def prompt_version_detail(prompt_id, version_id):
         changes=changes,
         has_previous=newer is not None,
     )
+
+
+@admin_bp.route('/prompt/<prompt_id>/share', methods=['POST'])
+@login_required
+def share_prompt(prompt_id):
+    prompt = get_prompt_or_404(prompt_id)
+    if not prompt.share_token:
+        prompt.share_token = secrets.token_urlsafe(32)
+    prompt.is_public = True
+    prompt.save()
+    return redirect(f'/admin/prompt/{prompt_id}')
+
+
+@admin_bp.route('/prompt/<prompt_id>/unshare', methods=['POST'])
+@login_required
+def unshare_prompt(prompt_id):
+    prompt = get_prompt_or_404(prompt_id)
+    prompt.is_public = False
+    prompt.save()
+    return redirect(f'/admin/prompt/{prompt_id}')

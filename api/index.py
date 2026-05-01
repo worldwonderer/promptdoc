@@ -2,13 +2,14 @@ import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
-from flask import Flask, request, redirect, abort
+from flask import Flask, request, redirect, abort, render_template
 from flask_babel import Babel, get_locale as babel_get_locale
 from flask_mongoengine import MongoEngine
 
 from .config import MONGODB_SETTINGS
 from .api_routes import bp
 from .admin_routes import admin_bp
+from .models import Prompt
 
 
 app = Flask(__name__)
@@ -53,3 +54,12 @@ def set_locale(locale_code):
 @app.context_processor
 def inject_now():
     return {'now': datetime.now(), 'get_locale': babel_get_locale}
+
+
+@app.route('/s/<share_token>')
+def shared_prompt(share_token):
+    try:
+        prompt = Prompt.objects.get(share_token=share_token, is_public=True)
+    except Prompt.DoesNotExist:
+        abort(404)
+    return render_template('prompt_share.html', prompt=prompt)

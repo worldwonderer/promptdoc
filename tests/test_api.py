@@ -306,3 +306,71 @@ def test_get_version_diff(client, created_prompt):
     assert response.status_code == 200
     assert 'diff' in response.json
     assert 'changes' in response.json
+
+
+def test_share_prompt_generates_token(client, created_prompt):
+    response = client.post(
+        f'/admin/prompt/{created_prompt.prompt_id}/share',
+        headers={'Authorization': 'Bearer test_auth_token'},
+    )
+    assert response.status_code == 302
+    created_prompt.reload()
+    assert created_prompt.is_public is True
+    assert created_prompt.share_token is not None
+    assert len(created_prompt.share_token) > 10
+
+
+def test_unshare_prompt_disables_access(client, created_prompt):
+    created_prompt.share_token = 'test-share-token-123'
+    created_prompt.is_public = True
+    created_prompt.save()
+
+    client.post(
+        f'/admin/prompt/{created_prompt.prompt_id}/unshare',
+        headers={'Authorization': 'Bearer test_auth_token'},
+    )
+    created_prompt.reload()
+    assert created_prompt.is_public is False
+
+
+def test_public_share_api_returns_whitelisted_fields(client, created_prompt):
+    created_prompt.share_token = 'test-share-token-456'
+    created_prompt.is_public = True
+    created_prompt.save()
+
+    response = client.get('/api/share/test-share-token-456')
+    assert response.status_code == 200
+    data = response.json
+    assert 'content' in data
+    assert 'applicable_llm' in data
+    assert 'version' in data
+    assert 'tags' in data
+    assert 'prompt_id' not in data
+    assert 'variables' not in data
+    assert 'example' not in data
+
+
+def test_public_share_api_invalid_token_returns_404(client):
+    response = client.get('/api/share/nonexistent-token')
+    assert response.status_code == 404
+
+
+def test_public_share_page_renders(client, created_prompt):
+    created_prompt.share_token = 'test-share-token-789'
+    created_prompt.is_public = True
+    created_prompt.save()
+
+    response = client.get('/s/test-share-token-789')
+    assert response.status_code == 200
+    page = response.get_data(as_text=True)
+    assert 'Shared Prompt' in page
+    assert created_prompt.content in page
+
+
+def test_unshared_prompt_returns_404(client, created_prompt):
+    created_prompt.share_token = 'test-share-inactive'
+    created_prompt.is_public = False
+    created_prompt.save()
+
+    response = client.get('/s/test-share-inactive')
+    assert response.status_code == 404
