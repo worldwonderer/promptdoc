@@ -4,6 +4,7 @@ from api.admin_routes import TEMPLATE_VAR_PATTERN, render_prompt_preview
 from api.config import DEFAULT_AUTH_TOKEN_PLACEHOLDER, get_auth_token
 
 
+@pytest.mark.unit
 class TestTemplateVarPattern:
     def test_matches_simple_variable(self):
         match = TEMPLATE_VAR_PATTERN.search('Hello {{name}}')
@@ -44,6 +45,7 @@ class TestTemplateVarPattern:
         assert 'name' in matches
 
 
+@pytest.mark.unit
 class TestRenderPromptPreview:
     def test_simple_replacement(self):
         result = render_prompt_preview('Hello {{name}}', {'name': 'World'})
@@ -87,6 +89,7 @@ class TestRenderPromptPreview:
         assert result == 'Bob'
 
 
+@pytest.mark.unit
 class TestGetAuthToken:
     def test_returns_valid_token(self, monkeypatch):
         monkeypatch.setenv('AUTH_TOKEN', 'my-valid-token')
