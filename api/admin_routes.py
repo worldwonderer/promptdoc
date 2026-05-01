@@ -7,6 +7,7 @@ from functools import wraps
 from datetime import datetime
 
 import pyotp
+from flask_babel import gettext as _
 from marshmallow.exceptions import ValidationError
 from flask import render_template, Blueprint, request, redirect, session, url_for, abort
 
@@ -30,7 +31,7 @@ def login_required(f):
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if not ADMIN_SECRET:
-        return 'Admin secret is not configured', 503
+        return _('Admin secret is not configured'), 503
     if request.method == 'POST':
         auth_code = request.form.get('auth_code', '').strip()
         totp = pyotp.TOTP(ADMIN_SECRET)
@@ -39,7 +40,7 @@ def login():
             session.permanent = True  # 设置session为永久性的
             return redirect(url_for('admin.prompt_list'))
         else:
-            return 'Invalid auth code', 403
+            return _('Invalid auth code'), 403
     else:
         return render_template('login.html')
 
@@ -59,9 +60,9 @@ def handle_form_data(form):
         try:
             parsed_example = ast.literal_eval(example_str)
         except (ValueError, SyntaxError):
-            raise ValidationError({'example': ['Invalid example format. Please provide a valid dictionary.']})
+            raise ValidationError({'example': [_('Invalid example format. Please provide a valid dictionary.')]})
         if not isinstance(parsed_example, dict):
-            raise ValidationError({'example': ['Invalid example format. Please provide a valid dictionary.']})
+            raise ValidationError({'example': [_('Invalid example format. Please provide a valid dictionary.')]})
         form_data['example'] = parsed_example
     return form_data
 
@@ -70,7 +71,7 @@ def get_prompt_or_404(prompt_id):
     try:
         return Prompt.objects.get(prompt_id=prompt_id)
     except Prompt.DoesNotExist:
-        abort(404, description='Prompt not found')
+        abort(404, description=_('Prompt not found'))
 
 
 def render_prompt_preview(content, example):
@@ -137,7 +138,7 @@ def create_prompt():
             return render_template('prompt_form.html', errors=e.messages), 400
         except Exception as e:
             # 处理其他错误,可以在页面上显示一般性错误消息
-            return render_template('prompt_form.html', error='Failed to create prompt'), 500
+            return render_template('prompt_form.html', error=_('Failed to create prompt')), 500
     return render_template('prompt_form.html')
 
 
@@ -158,7 +159,7 @@ def edit_prompt(prompt_id):
         except ValidationError as e:
             return render_template('prompt_form.html', prompt=prompt, errors=e.messages), 400
         except Exception:
-            return render_template('prompt_form.html', prompt=prompt, error='Failed to update prompt'), 500
+            return render_template('prompt_form.html', prompt=prompt, error=_('Failed to update prompt')), 500
     return render_template('prompt_form.html', prompt=prompt)
 
 

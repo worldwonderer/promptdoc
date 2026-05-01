@@ -3,6 +3,8 @@ import logging
 from functools import wraps
 from datetime import datetime
 
+# API routes intentionally kept in English -- no i18n wrapping needed.
+
 from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
 from mongoengine.errors import ValidationError as MongoValidationError

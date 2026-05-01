@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ 'Create' if not prompt else 'Edit' }} Prompt{% endblock %}
+{% block title %}{{ _('Create Prompt') if not prompt else _('Edit Prompt') }}{% endblock %}
 
 {% block content %}
 <div x-data="{
@@ -26,16 +26,16 @@
     <div class="mb-6">
         <a href="/admin/prompts" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            Back to list
+            {{ _('Back to list') }}
         </a>
     </div>
 
     <div class="max-w-3xl mx-auto">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ 'Create' if not prompt else 'Edit' }} Prompt</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ _('Create Prompt') if not prompt else _('Edit Prompt') }}</h1>
 
         {% if errors %}
         <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
-            <p class="text-sm font-medium text-red-800 dark:text-red-300 mb-2">Please fix the following errors:</p>
+            <p class="text-sm font-medium text-red-800 dark:text-red-300 mb-2">{{ _('Please fix the following errors:') }}</p>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-400 space-y-1">
                 {% for field, error_messages in errors.items() %}
                 <li><strong>{{ field }}:</strong> {{ error_messages | join(', ') }}</li>
@@ -54,7 +54,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-5">
                 <!-- Content -->
                 <div>
-                    <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Content</label>
+                    <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Content') }}</label>
                     <textarea id="content" name="content" rows="8" required
                               class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 font-mono text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
                               placeholder="You are a {{role}} expert in {{domain}}...">{{ prompt.content if prompt else '' }}</textarea>
@@ -62,12 +62,12 @@
 
                 <!-- Variables -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Variables</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Variables') }}</label>
                     <div class="flex gap-2">
                         <input type="text" id="variable-input" x-model="newVariable" @keydown.enter.prevent="addVariable()"
                                class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
-                               placeholder="Add a variable">
-                        <button type="button" @click="addVariable()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Add</button>
+                               placeholder="{{ _('Add a variable') }}">
+                        <button type="button" @click="addVariable()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{{ _('Add') }}</button>
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2.5" x-cloak>
                         <template x-for="(v, i) in variables" :key="v">
@@ -82,11 +82,11 @@
 
                 <!-- Example -->
                 <div>
-                    <label for="example" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Example</label>
+                    <label for="example" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Example') }}</label>
                     <textarea id="example" name="example" rows="4"
                               class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 font-mono text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
                               placeholder="{'role': 'assistant', 'domain': 'AI'}">{{ prompt.example if prompt else '' }}</textarea>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Provide example values as a Python dictionary</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ _('Provide example values as a Python dictionary') }}</p>
                 </div>
             </div>
 
@@ -94,7 +94,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <!-- Applicable LLM -->
                     <div>
-                        <label for="applicable_llm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Applicable LLM</label>
+                        <label for="applicable_llm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Applicable LLM') }}</label>
                         <input type="text" id="applicable_llm" name="applicable_llm" value="{{ prompt.applicable_llm if prompt else '' }}" required
                                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
                                placeholder="e.g. GPT-4, Claude">
@@ -102,7 +102,7 @@
 
                     <!-- Version -->
                     <div>
-                        <label for="version" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Version</label>
+                        <label for="version" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Version') }}</label>
                         <input type="text" id="version" name="version" value="{{ prompt.version if prompt else '' }}" required
                                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
                                placeholder="e.g. 1.0">
@@ -111,12 +111,12 @@
 
                 <!-- Tags -->
                 <div class="mt-5">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tags</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Tags') }}</label>
                     <div class="flex gap-2">
                         <input type="text" id="tag-input" x-model="newTag" @keydown.enter.prevent="addTag()"
                                class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
-                               placeholder="Add a tag">
-                        <button type="button" @click="addTag()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Add</button>
+                               placeholder="{{ _('Add a tag') }}">
+                        <button type="button" @click="addTag()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{{ _('Add') }}</button>
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2.5" x-cloak>
                         <template x-for="(t, i) in tags" :key="t">
@@ -132,9 +132,9 @@
 
             <!-- Actions -->
             <div class="flex items-center justify-between pt-2">
-                <a href="/admin/prompts" class="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</a>
+                <a href="/admin/prompts" class="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">{{ _('Cancel') }}</a>
                 <button type="submit" class="px-6 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-medium text-sm transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                    {{ 'Create Prompt' if not prompt else 'Update Prompt' }}
+                    {{ _('Create Prompt') if not prompt else _('Update Prompt') }}
                 </button>
             </div>
         </form>

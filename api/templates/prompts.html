@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Prompts{% endblock %}
+{% block title %}{{ _('Prompts') }}{% endblock %}
 
 {% block content %}
 <div x-data="{ search: '{{ request.args.get("search", "") }}' }">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prompts</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ total_count }} template{{ 's' if total_count != 1 else '' }} total</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Prompts') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ ngettext('%(count)s prompt total', '%(count)s prompts total', total_count) }}</p>
         </div>
         <a href="/admin/prompt/create" class="inline-flex items-center px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition-colors shadow-sm">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Create Prompt
+            {{ _('Create Prompt') }}
         </a>
     </div>
 
@@ -21,7 +21,7 @@
         <div class="flex gap-3">
             <div class="relative flex-1">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" name="search" x-model="search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors text-sm" placeholder="Search by content...">
+                <input type="text" name="search" x-model="search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors text-sm" placeholder="{{ _('Search by content...') }}">
             </div>
             {% if request.args.get('tag') %}
             <a href="{{ url_for('admin.prompt_list', search=request.args.get('search', '')) }}" class="inline-flex items-center px-3 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -30,7 +30,7 @@
             </a>
             {% endif %}
             <button type="submit" class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                Search
+                {{ _('Search') }}
             </button>
         </div>
     </form>
@@ -41,11 +41,11 @@
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-24">ID</th>
-                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3">Content</th>
-                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-40">Tags</th>
-                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">Model</th>
-                        <th class="text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">Actions</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-24">{{ _('ID') }}</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3">{{ _('Content') }}</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-40">{{ _('Tags') }}</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">{{ _('Model') }}</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 py-3 w-28">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -75,14 +75,14 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-1">
-                                <a href="/admin/prompt/{{ prompt.prompt_id }}" class="p-1.5 rounded-md text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:text-brand-400 dark:hover:bg-brand-900/20 transition-colors" title="View">
+                                <a href="/admin/prompt/{{ prompt.prompt_id }}" class="p-1.5 rounded-md text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:text-brand-400 dark:hover:bg-brand-900/20 transition-colors" title="{{ _('View') }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
-                                <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:text-amber-400 dark:hover:bg-amber-900/20 transition-colors" title="Edit">
+                                <a href="/admin/prompt/{{ prompt.prompt_id }}/edit" class="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:text-amber-400 dark:hover:bg-amber-900/20 transition-colors" title="{{ _('Edit') }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" class="inline" onclick="return confirm('Are you sure you want to delete this prompt?')">
-                                    <button type="submit" class="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-colors" title="Delete">
+                                <form action="/admin/prompt/{{ prompt.prompt_id }}/delete" method="POST" class="inline" data-confirm="{{ _('Are you sure you want to delete this prompt?') }}" onsubmit="return confirm(this.dataset.confirm)">
+                                    <button type="submit" class="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-colors" title="{{ _('Delete') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -94,7 +94,7 @@
                     <tr>
                         <td colspan="5" class="px-4 py-12 text-center text-gray-400 dark:text-gray-500">
                             <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <p class="text-sm">No prompts found</p>
+                            <p class="text-sm">{{ _('No prompts found') }}</p>
                         </td>
                     </tr>
                     {% endif %}
@@ -110,7 +110,7 @@
         <div class="flex items-center gap-1">
             {% if page > 1 %}
             <a href="{{ url_for('admin.prompt_list', page=page-1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                &laquo; Prev
+                &laquo; {{ _('Prev') }}
             </a>
             {% endif %}
 
@@ -126,7 +126,7 @@
 
             {% if page < total_pages %}
             <a href="{{ url_for('admin.prompt_list', page=page+1, per_page=per_page, tag=request.args.get('tag', ''), search=request.args.get('search', '')) }}" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                Next &raquo;
+                {{ _('Next') }} &raquo;
             </a>
             {% endif %}
         </div>

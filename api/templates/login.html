@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}{{ _('Login') }}{% endblock %}
 
 {% block content %}
 <div class="flex items-center justify-center min-h-[70vh]">
@@ -12,23 +12,23 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your authenticator</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Welcome Back') }}</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ _('Sign in with your authenticator') }}</p>
             </div>
             <form method="post" class="space-y-5">
                 <div>
-                    <label for="auth_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Google Authenticator Code</label>
+                    <label for="auth_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ _('Google Authenticator Code') }}</label>
                     <input type="text" id="auth_code" name="auth_code" required autocomplete="one-time-code"
                            class="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2.5 text-center text-lg tracking-[0.3em] font-mono focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                            placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <button type="submit" class="w-full rounded-lg bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-medium py-2.5 px-4 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                    Verify & Sign In
+                    {{ _('Verify & Sign In') }}
                 </button>
             </form>
         </div>
         <p class="text-center text-xs text-gray-400 dark:text-gray-500 mt-4">
-            Protected by two-factor authentication
+            {{ _('Protected by two-factor authentication') }}
         </p>
     </div>
 </div>
