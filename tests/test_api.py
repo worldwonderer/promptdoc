@@ -308,10 +308,9 @@ def test_get_version_diff(client, created_prompt):
     assert 'changes' in response.json
 
 
-def test_share_prompt_generates_token(client, created_prompt):
-    response = client.post(
+def test_share_prompt_generates_token(logged_in_client, created_prompt):
+    response = logged_in_client.post(
         f'/admin/prompt/{created_prompt.prompt_id}/share',
-        headers={'Authorization': 'Bearer test_auth_token'},
     )
     assert response.status_code == 302
     created_prompt.reload()
@@ -320,14 +319,13 @@ def test_share_prompt_generates_token(client, created_prompt):
     assert len(created_prompt.share_token) > 10
 
 
-def test_unshare_prompt_disables_access(client, created_prompt):
+def test_unshare_prompt_disables_access(logged_in_client, created_prompt):
     created_prompt.share_token = 'test-share-token-123'
     created_prompt.is_public = True
     created_prompt.save()
 
-    client.post(
+    logged_in_client.post(
         f'/admin/prompt/{created_prompt.prompt_id}/unshare',
-        headers={'Authorization': 'Bearer test_auth_token'},
     )
     created_prompt.reload()
     assert created_prompt.is_public is False
