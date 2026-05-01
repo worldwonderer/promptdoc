@@ -277,3 +277,18 @@ msgstr "内容差异"
 msgid "Content"
 msgstr "内容"
 
+msgid "Shared Prompt"
+msgstr "分享的提示词"
+
+msgid "Share"
+msgstr "分享"
+
+msgid "Unshare"
+msgstr "取消分享"
+
+msgid "Shared via public link"
+msgstr "通过公开链接分享"
+
+msgid "Shared prompt not found"
+msgstr "分享的提示词未找到"
+

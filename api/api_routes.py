@@ -283,3 +283,17 @@ def get_version_diff(prompt_id, version_id):
         'diff': diff,
         'changes': changes,
     }), 200
+
+
+@bp.route('/share/<share_token>', methods=['GET'])
+def get_shared_prompt(share_token):
+    try:
+        prompt = Prompt.objects.get(share_token=share_token, is_public=True)
+    except Prompt.DoesNotExist:
+        return error_response('Shared prompt not found', 404)
+    return jsonify({
+        'content': prompt.content,
+        'applicable_llm': prompt.applicable_llm,
+        'version': prompt.version,
+        'tags': prompt.tags or [],
+    }), 200

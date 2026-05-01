@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full" style="overflow-y: scroll">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Shared Prompt') }} — Prompt Doc</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-full">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prompt Doc</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ _('Shared Prompt') }}</p>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Version') }}</dt>
+                        <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ prompt.version }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('Model') }}</dt>
+                        <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ prompt.applicable_llm }}</dd>
+                    </div>
+                    {% if prompt.tags %}
+                    <div class="col-span-2 sm:col-span-1">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ _('Tags') }}</dt>
+                        <div class="flex flex-wrap gap-1">
+                            {% for tag in prompt.tags %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white bg-brand-600">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ _('Content') }}</h2>
+                </div>
+                <div class="p-6">
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-700">{{ prompt.content }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8 text-xs text-gray-400 dark:text-gray-500">
+            Prompt Doc &middot; {{ _('Shared via public link') }}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from marshmallow_mongoengine import ModelSchema
-from mongoengine import Document, StringField,  ListField, DateTimeField, DictField
+from mongoengine import Document, StringField, ListField, DateTimeField, DictField, BooleanField
 
 
 class Prompt(Document):
@@ -14,6 +14,8 @@ class Prompt(Document):
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
     tags = ListField(StringField())
+    share_token = StringField(unique=True, sparse=True)
+    is_public = BooleanField(default=False)
 
     meta = {'collection': 'prompts'}
 
