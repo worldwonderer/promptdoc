@@ -10,7 +10,7 @@ from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
 from mongoengine.errors import ValidationError as MongoValidationError
 
-from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot
+from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot, compute_field_changes
 from .config import get_auth_token
 
 bp = Blueprint('api', __name__, url_prefix='/api')
@@ -212,6 +212,10 @@ def get_prompt_list():
 @token_required
 def get_prompt_versions(prompt_id):
     try:
+        Prompt.objects.get(prompt_id=prompt_id)
+    except Prompt.DoesNotExist:
+        return error_response('Prompt not found', 404)
+    try:
         page, error = parse_positive_int_arg('page', 1)
         if error:
             return error_response(error, 400)
@@ -271,18 +275,7 @@ def get_version_diff(prompt_id, version_id):
         lineterm='',
     ))
 
-    changes = {}
-    if newer:
-        if newer.version != version.version:
-            changes['version'] = {'from': newer.version, 'to': version.version}
-        if newer.applicable_llm != version.applicable_llm:
-            changes['applicable_llm'] = {'from': newer.applicable_llm, 'to': version.applicable_llm}
-        if set(newer.tags or []) != set(version.tags or []):
-            changes['tags'] = {'from': newer.tags, 'to': version.tags}
-        if set(newer.variables or []) != set(version.variables or []):
-            changes['variables'] = {'from': newer.variables, 'to': version.variables}
-        if newer.example != version.example:
-            changes['example'] = {'from': newer.example, 'to': version.example}
+    changes = compute_field_changes(newer, version)
 
     return jsonify({
         'version_id': str(version.id),

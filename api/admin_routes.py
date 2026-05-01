@@ -12,7 +12,7 @@ from flask_babel import gettext as _
 from marshmallow.exceptions import ValidationError
 from flask import render_template, Blueprint, request, redirect, session, url_for, abort
 
-from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot
+from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot, compute_field_changes
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -183,28 +183,12 @@ def prompt_detail(prompt_id):
     return render_template('prompt_detail.html', prompt=prompt, formatted_prompt=formatted_prompt, version_count=version_count)
 
 
-def _compute_field_changes(newer, version):
-    changes = {}
-    if newer:
-        if newer.version != version.version:
-            changes['version'] = {'from': newer.version, 'to': version.version}
-        if newer.applicable_llm != version.applicable_llm:
-            changes['applicable_llm'] = {'from': newer.applicable_llm, 'to': version.applicable_llm}
-        if set(newer.tags or []) != set(version.tags or []):
-            changes['tags'] = {'from': newer.tags, 'to': version.tags}
-        if set(newer.variables or []) != set(version.variables or []):
-            changes['variables'] = {'from': newer.variables, 'to': version.variables}
-        if newer.example != version.example:
-            changes['example'] = {'from': newer.example, 'to': version.example}
-    return changes
-
-
 @admin_bp.route('/prompt/<prompt_id>/history')
 @login_required
 def prompt_history(prompt_id):
     prompt = get_prompt_or_404(prompt_id)
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 20))
+    per_page = min(int(request.args.get('per_page', 20)), 100)
 
     query = PromptVersion.objects(prompt_id=prompt_id).order_by('-snapshot_at')
     total_count = query.count()
@@ -224,7 +208,10 @@ def prompt_history(prompt_id):
 @login_required
 def prompt_version_detail(prompt_id, version_id):
     prompt = get_prompt_or_404(prompt_id)
-    version = PromptVersion.objects.get(id=version_id, prompt_id=prompt_id)
+    try:
+        version = PromptVersion.objects.get(id=version_id, prompt_id=prompt_id)
+    except PromptVersion.DoesNotExist:
+        abort(404, description=_('Version not found'))
 
     newer = PromptVersion.objects(
         prompt_id=prompt_id,
@@ -238,7 +225,7 @@ def prompt_version_detail(prompt_id, version_id):
         lineterm='',
     ))
 
-    changes = _compute_field_changes(newer, version)
+    changes = compute_field_changes(newer, version)
 
     return render_template(
         'prompt_version_detail.html',
