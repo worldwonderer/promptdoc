@@ -230,3 +230,50 @@ msgstr "上一页"
 msgid "Next"
 msgstr "下一页"
 
+#: api/templates/prompt_detail.html:22
+msgid "History"
+msgstr "历史记录"
+
+#: api/templates/prompt_history.html:8 api/templates/prompt_history.html:17
+msgid "Back to detail"
+msgstr "返回详情"
+
+#: api/templates/prompt_history.html:4 api/templates/prompt_history.html:17
+msgid "Version History"
+msgstr "版本历史"
+
+#: api/templates/prompt_history.html:30
+msgid "Snapshot Time"
+msgstr "快照时间"
+
+#: api/templates/prompt_history.html:47
+msgid "Reason"
+msgstr "原因"
+
+#: api/templates/prompt_history.html:55
+msgid "View Diff"
+msgstr "查看差异"
+
+#: api/templates/prompt_history.html:92
+msgid "No version history available"
+msgstr "暂无版本历史"
+
+#: api/templates/prompt_version_detail.html:9
+msgid "Back to history"
+msgstr "返回历史"
+
+#: api/templates/prompt_version_detail.html:4
+msgid "Version Detail"
+msgstr "版本详情"
+
+#: api/templates/prompt_version_detail.html:24
+msgid "Changes"
+msgstr "变更"
+
+#: api/templates/prompt_version_detail.html:39
+msgid "Content Diff"
+msgstr "内容差异"
+
+msgid "Content"
+msgstr "内容"
+

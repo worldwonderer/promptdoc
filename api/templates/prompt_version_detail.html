@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Version Detail') }}{% endblock %}
+
+{% block content %}
+<div>
+    <div class="mb-6">
+        <a href="/admin/prompt/{{ prompt.prompt_id }}/history" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {{ _('Back to history') }}
+        </a>
+    </div>
+
+    <div class="max-w-3xl mx-auto space-y-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Version Detail') }}</h1>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                {{ version.snapshot_at.strftime('%Y-%m-%d %H:%M') if version.snapshot_at else '—' }}
+                &middot; {{ _('Version') }} {{ version.version }}
+                &middot; <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if version.snapshot_reason == 'delete' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% else %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300{% endif %}">{{ version.snapshot_reason }}</span>
+            </p>
+        </div>
+
+        {% if changes %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ _('Changes') }}</h2>
+            <div class="space-y-2">
+                {% for field, vals in changes.items() %}
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="font-medium text-gray-600 dark:text-gray-400 capitalize">{{ field }}</span>
+                    <span class="text-red-600 dark:text-red-400 line-through">{{ vals.from }}</span>
+                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    <span class="text-green-600 dark:text-green-400">{{ vals.to }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if has_previous %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ _('Content Diff') }}</h2>
+            </div>
+            <div class="p-4">
+                <pre class="text-sm font-mono leading-relaxed overflow-x-auto">{% for line in diff_lines %}{% if line.startswith('---') or line.startswith('+++') %}<span class="text-purple-600 dark:text-purple-400 font-bold">{{ line }}</span>
+{% elif line.startswith('-') %}<span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300">{{ line }}</span>
+{% elif line.startswith('+') %}<span class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">{{ line }}</span>
+{% elif line.startswith('@@') %}<span class="text-cyan-600 dark:text-cyan-400">{{ line }}</span>
+{% else %}{{ line }}
+{% endif %}{% endfor %}</pre>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ _('Content') }}</h2>
+            </div>
+            <div class="p-6">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-700">{{ version.content }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

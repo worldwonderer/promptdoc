@@ -3,6 +3,7 @@ import ast
 import uuid
 import json
 import re
+import difflib
 from functools import wraps
 from datetime import datetime
 
@@ -11,7 +12,7 @@ from flask_babel import gettext as _
 from marshmallow.exceptions import ValidationError
 from flask import render_template, Blueprint, request, redirect, session, url_for, abort
 
-from .models import Prompt, PromptSchema
+from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -152,6 +153,7 @@ def edit_prompt(prompt_id):
             # Validate and deserialize the form data with PromptSchema
             prompt_schema = PromptSchema(partial=True)
             prompt_schema.load(form_data)
+            create_version_snapshot(prompt)
             prompt.update(**form_data)
             prompt.updated_at = datetime.now()
             prompt.save()
@@ -167,6 +169,7 @@ def edit_prompt(prompt_id):
 @login_required
 def delete_prompt(prompt_id):
     prompt = get_prompt_or_404(prompt_id)
+    create_version_snapshot(prompt, reason='delete')
     prompt.delete()
     return redirect('/admin/prompts')
 
@@ -176,4 +179,72 @@ def delete_prompt(prompt_id):
 def prompt_detail(prompt_id):
     prompt = get_prompt_or_404(prompt_id)
     formatted_prompt = render_prompt_preview(prompt.content, prompt.example)
-    return render_template('prompt_detail.html', prompt=prompt, formatted_prompt=formatted_prompt)
+    version_count = PromptVersion.objects(prompt_id=prompt_id).count()
+    return render_template('prompt_detail.html', prompt=prompt, formatted_prompt=formatted_prompt, version_count=version_count)
+
+
+def _compute_field_changes(newer, version):
+    changes = {}
+    if newer:
+        if newer.version != version.version:
+            changes['version'] = {'from': newer.version, 'to': version.version}
+        if newer.applicable_llm != version.applicable_llm:
+            changes['applicable_llm'] = {'from': newer.applicable_llm, 'to': version.applicable_llm}
+        if set(newer.tags or []) != set(version.tags or []):
+            changes['tags'] = {'from': newer.tags, 'to': version.tags}
+        if set(newer.variables or []) != set(version.variables or []):
+            changes['variables'] = {'from': newer.variables, 'to': version.variables}
+        if newer.example != version.example:
+            changes['example'] = {'from': newer.example, 'to': version.example}
+    return changes
+
+
+@admin_bp.route('/prompt/<prompt_id>/history')
+@login_required
+def prompt_history(prompt_id):
+    prompt = get_prompt_or_404(prompt_id)
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 20))
+
+    query = PromptVersion.objects(prompt_id=prompt_id).order_by('-snapshot_at')
+    total_count = query.count()
+    versions = query.skip((page - 1) * per_page).limit(per_page)
+
+    return render_template(
+        'prompt_history.html',
+        prompt=prompt,
+        versions=versions,
+        total_count=total_count,
+        page=page,
+        per_page=per_page,
+    )
+
+
+@admin_bp.route('/prompt/<prompt_id>/version/<version_id>')
+@login_required
+def prompt_version_detail(prompt_id, version_id):
+    prompt = get_prompt_or_404(prompt_id)
+    version = PromptVersion.objects.get(id=version_id, prompt_id=prompt_id)
+
+    newer = PromptVersion.objects(
+        prompt_id=prompt_id,
+        snapshot_at__gt=version.snapshot_at,
+    ).order_by('snapshot_at').first()
+
+    old_content = newer.content if newer else ''
+    diff_lines = list(difflib.unified_diff(
+        old_content.splitlines(keepends=True),
+        version.content.splitlines(keepends=True),
+        lineterm='',
+    ))
+
+    changes = _compute_field_changes(newer, version)
+
+    return render_template(
+        'prompt_version_detail.html',
+        prompt=prompt,
+        version=version,
+        diff_lines=diff_lines,
+        changes=changes,
+        has_previous=newer is not None,
+    )
