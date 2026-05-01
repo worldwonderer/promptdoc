@@ -1,5 +1,6 @@
 import uuid
 import logging
+import difflib
 from functools import wraps
 from datetime import datetime
 
@@ -9,7 +10,7 @@ from flask import jsonify, request, Blueprint
 from marshmallow import ValidationError
 from mongoengine.errors import ValidationError as MongoValidationError
 
-from .models import Prompt, PromptSchema
+from .models import Prompt, PromptSchema, PromptVersion, create_version_snapshot, compute_field_changes
 from .config import get_auth_token
 
 bp = Blueprint('api', __name__, url_prefix='/api')
@@ -92,6 +93,7 @@ def update_prompt(prompt_id):
             raise ValidationError(validation_errors)
         payload.pop('prompt_id', None)
         payload['updated_at'] = datetime.now()
+        create_version_snapshot(prompt)
         prompt.update(**payload)
         logger.info(f"Prompt updated successfully: {prompt_id}")
         return jsonify({'message': 'Prompt updated successfully'}), 200
@@ -117,6 +119,7 @@ def delete_prompt(prompt_id):
     """
     try:
         prompt = Prompt.objects.get(prompt_id=prompt_id)
+        create_version_snapshot(prompt, reason='delete')
         prompt.delete()
         logger.info(f"Prompt deleted successfully: {prompt_id}")
         return jsonify({'message': 'Prompt deleted successfully'}), 200
@@ -203,3 +206,80 @@ def get_prompt_list():
     except Exception as e:
         logger.error(f"Error retrieving prompt list: {str(e)}")
         return jsonify({'error': 'Failed to retrieve prompt list'}), 500
+
+
+@bp.route('/prompt/<prompt_id>/versions', methods=['GET'])
+@token_required
+def get_prompt_versions(prompt_id):
+    try:
+        Prompt.objects.get(prompt_id=prompt_id)
+    except Prompt.DoesNotExist:
+        return error_response('Prompt not found', 404)
+    try:
+        page, error = parse_positive_int_arg('page', 1)
+        if error:
+            return error_response(error, 400)
+        per_page, error = parse_positive_int_arg('per_page', 20, max_value=MAX_PER_PAGE)
+        if error:
+            return error_response(error, 400)
+
+        query = PromptVersion.objects(prompt_id=prompt_id).order_by('-snapshot_at')
+        total_count = query.count()
+        versions = query.skip((page - 1) * per_page).limit(per_page)
+
+        version_data = []
+        for v in versions:
+            version_data.append({
+                'id': str(v.id),
+                'version': v.version,
+                'content': v.content,
+                'variables': v.variables,
+                'example': v.example,
+                'tags': v.tags,
+                'applicable_llm': v.applicable_llm,
+                'snapshot_at': v.snapshot_at.isoformat() if v.snapshot_at else None,
+                'snapshot_reason': v.snapshot_reason,
+            })
+
+        return jsonify({
+            'data': version_data,
+            'pagination': {
+                'total_count': total_count,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': (total_count + per_page - 1) // per_page,
+            },
+        }), 200
+    except Exception as e:
+        logger.exception(f"Error retrieving version history: {str(e)}")
+        return error_response('Failed to retrieve version history', 500)
+
+
+@bp.route('/prompt/<prompt_id>/versions/<version_id>/diff', methods=['GET'])
+@token_required
+def get_version_diff(prompt_id, version_id):
+    try:
+        version = PromptVersion.objects.get(id=version_id, prompt_id=prompt_id)
+    except PromptVersion.DoesNotExist:
+        return error_response('Version not found', 404)
+
+    newer = PromptVersion.objects(
+        prompt_id=prompt_id,
+        snapshot_at__gt=version.snapshot_at,
+    ).order_by('snapshot_at').first()
+
+    old_content = newer.content if newer else ''
+    diff = ''.join(difflib.unified_diff(
+        old_content.splitlines(keepends=True),
+        version.content.splitlines(keepends=True),
+        lineterm='',
+    ))
+
+    changes = compute_field_changes(newer, version)
+
+    return jsonify({
+        'version_id': str(version.id),
+        'snapshot_at': version.snapshot_at.isoformat() if version.snapshot_at else None,
+        'diff': diff,
+        'changes': changes,
+    }), 200

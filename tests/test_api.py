@@ -5,7 +5,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 from api import admin_routes
-from api.models import Prompt
+from api.models import Prompt, PromptVersion
 from tests.helpers import TEST_MARKER_TAG, auth_headers, build_prompt_payload
 
 
@@ -14,6 +14,7 @@ def cleanup_test_prompts():
     yield
     Prompt.objects(tags__in=[TEST_MARKER_TAG]).delete()
     Prompt.objects(prompt_id__startswith='test-').delete()
+    PromptVersion.objects(prompt_id__startswith='test-').delete()
 
 
 @pytest.fixture
@@ -254,3 +255,54 @@ def test_api_rejects_invalid_token(client):
 def test_api_rejects_missing_auth_header(client):
     response = client.get('/api/prompts')
     assert response.status_code == 401
+
+
+def test_update_creates_version_snapshot(client, created_prompt):
+    updated_data = build_prompt_payload(content='Updated content', version='2')
+    response = client.put(
+        f'/api/prompt/{created_prompt.prompt_id}',
+        json=updated_data,
+        headers=auth_headers(),
+    )
+    assert response.status_code == 200
+
+    versions = PromptVersion.objects(prompt_id=created_prompt.prompt_id)
+    assert versions.count() == 1
+    assert versions.first().content == 'Test prompt content'
+    assert versions.first().version == '1'
+
+
+def test_delete_creates_version_snapshot(client, created_prompt):
+    response = client.delete(
+        f'/api/prompt/{created_prompt.prompt_id}',
+        headers=auth_headers(),
+    )
+    assert response.status_code == 200
+
+    versions = PromptVersion.objects(prompt_id=created_prompt.prompt_id)
+    assert versions.count() == 1
+    assert versions.first().snapshot_reason == 'delete'
+
+
+def test_get_prompt_versions(client, created_prompt):
+    updated_data = build_prompt_payload(content='Updated', version='2')
+    client.put(f'/api/prompt/{created_prompt.prompt_id}', json=updated_data, headers=auth_headers())
+
+    response = client.get(f'/api/prompt/{created_prompt.prompt_id}/versions', headers=auth_headers())
+    assert response.status_code == 200
+    assert len(response.json['data']) == 1
+    assert response.json['data'][0]['content'] == 'Test prompt content'
+
+
+def test_get_version_diff(client, created_prompt):
+    updated_data = build_prompt_payload(content='Completely new content', version='2')
+    client.put(f'/api/prompt/{created_prompt.prompt_id}', json=updated_data, headers=auth_headers())
+
+    version = PromptVersion.objects(prompt_id=created_prompt.prompt_id).first()
+    response = client.get(
+        f'/api/prompt/{created_prompt.prompt_id}/versions/{version.id}/diff',
+        headers=auth_headers(),
+    )
+    assert response.status_code == 200
+    assert 'diff' in response.json
+    assert 'changes' in response.json
