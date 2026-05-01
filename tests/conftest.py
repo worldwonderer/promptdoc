@@ -3,6 +3,7 @@ import os
 import pytest
 
 os.environ.setdefault('AUTH_TOKEN', 'test_auth_token')
+os.environ.setdefault('ADMIN_SECRET', 'JBSWY3DPEHPK3PXP')
 
 from api.index import app
 

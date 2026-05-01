@@ -2,6 +2,8 @@ import uuid
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from api import admin_routes
 from api.models import Prompt
 from tests.helpers import TEST_MARKER_TAG, auth_headers, build_prompt_payload
