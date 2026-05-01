@@ -109,7 +109,3 @@ curl "http://127.0.0.1:5000/api/share/SHARE_TOKEN"
 | `SECRET_KEY` | 是 | Flask session 密钥 |
 | `ADMIN_SECRET` | 是 | TOTP 密钥（由 `tool.py` 生成） |
 | `AUTH_TOKEN` | 是 | API Bearer Token |
-
-## 许可证
-
-[MIT](LICENSE)
