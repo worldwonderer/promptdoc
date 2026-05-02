@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ _('Prompts') }}</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ ngettext('%(count)s prompt total', '%(count)s prompts total', total_count) }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ ngettext('%(count)s prompt total', '%(count)s prompts total', total_count, count=total_count) }}</p>
         </div>
         <a href="/admin/prompt/create" class="inline-flex items-center px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition-colors shadow-sm">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
